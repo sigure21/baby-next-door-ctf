@@ -1,0 +1,10 @@
+**/.git
+**/.DS_Store
+node_modules
+organizer
+solver
+tests
+handout
+README.md
+compose.yaml
+*.log

@@ -1,0 +1,17 @@
+{
+  "name": "baby-next-door-ctf",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic CTF model of two historical Next.js trust-boundary bugs",
+  "scripts": {
+    "start:gateway": "node src/gateway.mjs",
+    "start:backend": "node src/backend.mjs",
+    "healthcheck": "node tests/healthcheck.mjs",
+    "solve": "node solver/solve.mjs",
+    "test": "node tests/healthcheck.mjs && node tests/protocol-regression.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

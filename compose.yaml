@@ -1,0 +1,82 @@
+name: baby-next-door
+
+services:
+  backend:
+    build:
+      context: .
+    command: ["node", "src/backend.mjs"]
+    environment:
+      BACKEND_HOST: "0.0.0.0"
+      BACKEND_PORT: "4000"
+      FLAG: "${FLAG:?Set FLAG before starting the challenge}"
+      WINDOW_SIGNING_KEY: "${WINDOW_SIGNING_KEY:?Set a 64-hex WINDOW_SIGNING_KEY before starting the challenge}"
+    expose:
+      - "4000"
+    init: true
+    mem_limit: 128m
+    cpus: 0.50
+    pids_limit: 64
+    ulimits:
+      nofile:
+        soft: 1024
+        hard: 1024
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+      start_period: 2s
+    networks:
+      - backplane
+
+  gateway:
+    build:
+      context: .
+    command: ["node", "src/gateway.mjs"]
+    environment:
+      GATEWAY_HOST: "0.0.0.0"
+      GATEWAY_PORT: "3000"
+      BACKEND_HOST: "backend"
+      BACKEND_PORT: "4000"
+      WINDOW_SIGNING_KEY: "${WINDOW_SIGNING_KEY:?Set a 64-hex WINDOW_SIGNING_KEY before starting the challenge}"
+    ports:
+      - "${CHALLENGE_PORT:-8080}:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    init: true
+    mem_limit: 128m
+    cpus: 0.50
+    pids_limit: 64
+    ulimits:
+      nofile:
+        soft: 1024
+        hard: 1024
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+      start_period: 2s
+    networks:
+      - front
+      - backplane
+
+networks:
+  front: {}
+  backplane:
+    internal: true
